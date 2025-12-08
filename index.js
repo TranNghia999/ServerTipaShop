@@ -28,7 +28,6 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174', // local React
     'https://admin-tipa-shop.vercel.app',
-    'https://overexertedly-unresponding-arely.ngrok-free.dev'// deployed React
   ],
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   credentials: true
@@ -40,7 +39,6 @@ app.options('*', cors({
     'http://localhost:5173',
     'http://localhost:5174', // local React
     'https://admin-tipa-shop.vercel.app',
-    'https://overexertedly-unresponding-arely.ngrok-free.dev' // deployed React
   ],
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   credentials: true
