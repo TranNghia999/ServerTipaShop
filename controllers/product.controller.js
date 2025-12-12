@@ -110,43 +110,90 @@ export async function uploadImages(request, response) {
     }
 }
 // tải hình ảnh Banner lên cloudinary
-var bannerImage = [];
+// var bannerImage = [];
+// export async function uploadBannerImages(request, response) {
+//     try {
+//         bannerImage = [];
+
+//         const image = request.files;
+
+
+//         const options = {
+//             use_filename: true,
+//             unique_filename: false,
+//             overwrite: false,
+//         };
+
+//         for (let i = 0; i < image?.length; i++) {
+
+//             const img = await cloudinary.uploader.upload(
+//                 image[i].path,
+//                 options,
+//                 function (error, result) {
+//                     bannerImage.push(result.secure_url);
+//                     fs.unlinkSync(`uploads/${request.files[i].filename}`);
+//                 }
+//             );
+//         }
+
+
+//         return response.status(200).json({
+//             images: bannerImage
+//         });
+
+//     } catch (error) {
+//         return response.status(500).json({
+//             message: error.message || error,
+//             error: true,
+//             success: false
+//         })
+//     }
+// }
+
+// tải hình ảnh Banner lên cloudinary dùng cho publish server ( Phát viết )
 export async function uploadBannerImages(request, response) {
     try {
-        bannerImage = [];
+        const files = request.files;
+        let bannerImage = [];
 
-        const image = request.files;
-
-
-        const options = {
-            use_filename: true,
-            unique_filename: false,
-            overwrite: false,
-        };
-
-        for (let i = 0; i < image?.length; i++) {
-
-            const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    bannerImage.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
+        if (!files || files.length === 0) {
+            return response.status(400).json({
+                message: "No banner images uploaded",
+            });
         }
 
+        const uploadPromises = files.map((file) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "banners",
+                        use_filename: true,
+                        unique_filename: false,
+                        overwrite: false,
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result.secure_url);
+                    }
+                );
+
+                streamifier.createReadStream(file.buffer).pipe(stream);
+            });
+        });
+
+        bannerImage = await Promise.all(uploadPromises);
 
         return response.status(200).json({
-            images: bannerImage
+            images: bannerImage,
         });
 
     } catch (error) {
+        console.error(error);
         return response.status(500).json({
             message: error.message || error,
             error: true,
-            success: false
-        })
+            success: false,
+        });
     }
 }
 
@@ -878,22 +925,63 @@ export async function getProduct(request, response) {
 }
 
 // Xóa hình ảnh 
-export async function removeImageFromCloudinary(request, response) {
-    const imgUrl = request.query.img;
+// export async function removeImageFromCloudinary(request, response) {
+//     const imgUrl = request.query.img;
 
-    const urlArr = imgUrl.split("/");
-    const image = urlArr[urlArr.length - 1];
+//     const urlArr = imgUrl.split("/");
+//     const image = urlArr[urlArr.length - 1];
 
-    const imageName = image.split(".")[0];
+//     const imageName = image.split(".")[0];
 
-    if (imageName) {
-        const res = await cloudinary.uploader.destroy(
-            imageName,
-            (error, result) => {
-                // console.log(error, res)
-            }
-        );
+//     if (imageName) {
+//         const res = await cloudinary.uploader.destroy(
+//             imageName,
+//             (error, result) => {
+//                 // console.log(error, res)
+//             }
+//         );
 
+//     }
+// }
+
+// Xoá hình ảnh dùng cho publish server ( Phát viết )
+export async function removeImageFromCloudinary(req, res) {
+    try {
+        const imgUrl = req.query.img;
+
+        if (!imgUrl) {
+            return res.status(400).json({
+                message: "Image URL is required",
+                success: false,
+            });
+        }
+
+        const publicIdWithExt = imgUrl.split("/upload/")[1];
+
+        if (!publicIdWithExt) {
+            return res.status(400).json({
+                message: "Invalid Cloudinary URL",
+                success: false,
+            });
+        }
+
+        const publicId = publicIdWithExt
+            .replace(/^v\d+\//, "")
+            .replace(/\.[^/.]+$/, "");
+
+        const result = await cloudinary.uploader.destroy(publicId);
+
+        return res.status(200).json({
+            result,
+            success: true,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: error.message || "Remove image failed",
+            success: false,
+        });
     }
 }
 
