@@ -17,44 +17,96 @@ cloudinary.config({
     secure: true,
 });
 
-// tải hình ảnh lên cloudinary
 var imagesArr = [];
+
+// tải hình ảnh lên cloudinary
+// export async function uploadImages(request, response) {
+//     try {
+//         imagesArr = [];
+
+//         const image = request.files;
+
+
+//         const options = {
+//             use_filename: true,
+//             unique_filename: false,
+//             overwrite: false,
+//         };
+
+//         for (let i = 0; i < image?.length; i++) {
+
+//             const img = await cloudinary.uploader.upload(
+//                 image[i].path,
+//                 options,
+//                 function (error, result) {
+//                     imagesArr.push(result.secure_url);
+//                     fs.unlinkSync(`uploads/${request.files[i].filename}`);
+//                 }
+//             );
+//         }
+
+
+//         return response.status(200).json({
+//             images: imagesArr
+//         });
+
+//     } catch (error) {
+//         return response.status(500).json({
+//             message: error.message || error,
+//             error: true,
+//             success: false
+//         })
+//     }
+// }
+
+// tải hình ảnh lên cloudinary dùng cho publish server (Phát viết)
 export async function uploadImages(request, response) {
     try {
-        imagesArr = [];
+        let imagesArr = [];
 
-        const image = request.files;
+        const files = request.files;
 
-
-        const options = {
-            use_filename: true,
-            unique_filename: false,
-            overwrite: false,
-        };
-
-        for (let i = 0; i < image?.length; i++) {
-
-            const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    imagesArr.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
+        if (!files || files.length === 0) {
+            return response.status(400).json({
+                message: "No images uploaded",
+            });
         }
 
+        const uploadPromises = files.map((file) => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "products",
+                        use_filename: true,
+                        unique_filename: false,
+                        overwrite: false,
+                    },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result.secure_url);
+                        }
+                    }
+                );
+
+                streamifier.createReadStream(file.buffer).pipe(stream);
+            });
+        });
+
+        imagesArr = await Promise.all(uploadPromises);
 
         return response.status(200).json({
-            images: imagesArr
+            images: imagesArr,
         });
 
     } catch (error) {
+        console.error(error);
         return response.status(500).json({
             message: error.message || error,
             error: true,
-            success: false
-        })
+            success: false,
+        });
     }
 }
 // tải hình ảnh Banner lên cloudinary
