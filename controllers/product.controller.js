@@ -1,5 +1,4 @@
 import ProductModel from '../models/product.modal.js';
-
 // CỦA RAM
 import ProductRAMSModel from '../models/productRAMS.js';
 // của WEIGHT
@@ -9,6 +8,7 @@ import ProductSIZEModel from '../models/productSIZE.js';
 
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import streamifier from "streamifier";
 
 cloudinary.config({
     cloud_name: process.env.cloudinary_Config_Cloud_Name,
