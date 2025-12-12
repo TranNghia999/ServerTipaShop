@@ -198,14 +198,74 @@ export async function uploadBannerImages(request, response) {
 }
 
 //tạo ra sản phẩm
+// export async function createProduct(request, response) {
+//     try {
+//         let product = new ProductModel({
+//             name: request.body.name,
+//             description: request.body.description,
+//             describe: request.body.describe,
+//             images: imagesArr,
+//             bannerimages: bannerImage,
+//             bannerTitleName: request.body.bannerTitleName,
+//             isDisplayOnHomeBanner: request.body.isDisplayOnHomeBanner,
+//             brand1: request.body.brand1,
+//             brand: request.body.brand,
+//             price: request.body.price,
+//             oldPrice: request.body.oldPrice,
+//             catName: request.body.catName,
+//             category: request.body.category,
+//             catId: request.body.catId,
+//             subCatId: request.body.subCatId,
+//             subCat: request.body.subCat,
+//             thirdsubCat: request.body.thirdsubCat,
+//             thirdsubCatId: request.body.thirdsubCatId,
+//             countInStock: request.body.countInStock,
+//             rating: request.body.rating,
+//             isFeatured: request.body.isFeatured,
+//             discount: request.body.discount,
+//             productRam: request.body.productRam,
+//             size: request.body.size,
+//             productWeight: request.body.productWeight,
+//         })
+
+//         product = await product.save();
+
+//         if (!product) {
+//             response.status(500).json({
+//                 error: true,
+//                 success: false,
+//                 message: "Sản phẩm chưa được tạo"
+//             });
+//         }
+
+//         imagesArr = [];
+
+//         return response.status(200).json({
+//             message: "Sản phẩm được tạo thành công",
+//             error: false,
+//             success: true,
+//             product: product
+//         })
+
+//     } catch (error) {
+//         return response.status(500).json({
+//             message: error.message || error,
+//             error: true,
+//             success: false
+
+//         })
+//     }
+// }
+
+// tạo ra sản phẩm cho publish server ( Phát viết )
 export async function createProduct(request, response) {
     try {
         let product = new ProductModel({
             name: request.body.name,
             description: request.body.description,
             describe: request.body.describe,
-            images: imagesArr,
-            bannerimages: bannerImage,
+            images: request.body.images,              
+            bannerimages: request.body.bannerimages,  
             bannerTitleName: request.body.bannerTitleName,
             isDisplayOnHomeBanner: request.body.isDisplayOnHomeBanner,
             brand1: request.body.brand1,
@@ -226,34 +286,23 @@ export async function createProduct(request, response) {
             productRam: request.body.productRam,
             size: request.body.size,
             productWeight: request.body.productWeight,
-        })
+        });
 
         product = await product.save();
-
-        if (!product) {
-            response.status(500).json({
-                error: true,
-                success: false,
-                message: "Sản phẩm chưa được tạo"
-            });
-        }
-
-        imagesArr = [];
 
         return response.status(200).json({
             message: "Sản phẩm được tạo thành công",
             error: false,
             success: true,
-            product: product
-        })
+            product,
+        });
 
     } catch (error) {
         return response.status(500).json({
             message: error.message || error,
             error: true,
-            success: false
-
-        })
+            success: false,
+        });
     }
 }
 
