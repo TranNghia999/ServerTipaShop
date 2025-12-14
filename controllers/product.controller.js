@@ -9,6 +9,7 @@ import ProductSIZEModel from '../models/productSIZE.js';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import streamifier from "streamifier";
+import path from "path";
 
 cloudinary.config({
     cloud_name: process.env.cloudinary_Config_Cloud_Name,
@@ -74,11 +75,13 @@ export async function uploadImages(request, response) {
 
         const uploadPromises = files.map((file) => {
             return new Promise((resolve, reject) => {
+                const fileName = path.parse(file.originalname).name;
                 const stream = cloudinary.uploader.upload_stream(
                     {
                         folder: "products",
+                        public_id: fileName,
                         use_filename: true,
-                        unique_filename: false,
+                        unique_filename: true,
                         overwrite: false,
                     },
                     (error, result) => {
@@ -164,11 +167,13 @@ export async function uploadBannerImages(request, response) {
 
         const uploadPromises = files.map((file) => {
             return new Promise((resolve, reject) => {
+                const fileName = path.parse(file.originalname).name;
                 const stream = cloudinary.uploader.upload_stream(
                     {
                         folder: "banners",
+                        public_id: fileName,
                         use_filename: true,
-                        unique_filename: false,
+                        unique_filename: true,
                         overwrite: false,
                     },
                     (error, result) => {
