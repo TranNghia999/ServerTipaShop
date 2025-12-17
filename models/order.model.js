@@ -58,6 +58,10 @@ const orderSchema = new mongoose.Schema({
   totalAmt: {
     type: Number,
     default: 0
+  },
+  // 🔹 Mã tạo cho đơn hàng để kết nối dữ liệu
+  orderId: {
+    type: String
   }
 }, {
   timestamps: true

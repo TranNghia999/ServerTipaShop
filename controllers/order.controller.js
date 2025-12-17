@@ -9,6 +9,7 @@ export const createOrderController = async (request, response) => {
     let order = new OrderModel({
       userId: request.body.userId,
       products: request.body.products,
+      orderId: request.body.orderId,
       paymentId: request.body.paymentId,
       payment_status: request.body.payment_status,
       delivery_address: request.body.delivery_address,
