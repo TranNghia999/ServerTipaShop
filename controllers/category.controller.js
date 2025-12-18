@@ -1,5 +1,6 @@
 import CategoryModel from '../models/category.modal.js';
-
+import path from "path";
+import streamifier from "streamifier"
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 
@@ -26,7 +27,7 @@ export async function uploadImages(req, res) {
         const stream = cloudinary.uploader.upload_stream(
           {
             folder: "categories",
-            public_id: originalName,   
+            public_id: `${originalName}-${Date.now()}`, // tránh trùng
             overwrite: false,
           },
           (error, result) => {
@@ -44,6 +45,7 @@ export async function uploadImages(req, res) {
     return res.status(200).json({ images });
 
   } catch (error) {
+    console.error("UPLOAD ERROR:", error);
     return res.status(500).json({
       error: true,
       message: error.message,
