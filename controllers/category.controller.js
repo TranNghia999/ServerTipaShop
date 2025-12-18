@@ -11,44 +11,44 @@ cloudinary.config({
 });
 
 // tải hình ảnh lên cloudinary
-var imagesArr = [];
-export async function uploadImages(request, response) {
+export async function uploadImages(req, res) {
   try {
-        imagesArr = [];
+    const files = req.files;
 
-        const image = request.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No images uploaded" });
+    }
 
-    
-    const options = {
-            use_filename: true,
-            unique_filename: false,
+    const uploadPromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const originalName = path.parse(file.originalname).name;
+
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "categories",
+            public_id: originalName,   
             overwrite: false,
-        };
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result.secure_url);
+          }
+        );
 
-    for (let i = 0; i < image?.length; i++) {
-    
-        const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    imagesArr.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
-        }
-      
+        streamifier.createReadStream(file.buffer).pipe(stream);
+      });
+    });
 
-        return response.status(200).json({
-            images: imagesArr
-        });
+    const images = await Promise.all(uploadPromises);
+
+    return res.status(200).json({ images });
 
   } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
 }
 
 // tạo danh mục
@@ -56,7 +56,7 @@ export async function createCategory(request, response) {
     try {
         let category = new CategoryModel({
             name: request.body.name,
-            images: imagesArr,
+            images: request.body.images,
             parentId: request.body.parentId,
             parentCatName: request.body.parentCatName,
         });
@@ -285,7 +285,7 @@ export async function updatedCategory(request, response){
         request.params.id,
         {
             name: request.body.name,
-            images: imagesArr.length > 0 ? imagesArr[0] : request.body.images,
+            images: request.body.images,
             parentId: request.body.parentId,
             parentCatName: request.body.parentCatName
         },
