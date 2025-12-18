@@ -23,9 +23,17 @@ import orderRouter from './route/order.route.js';
 
 const app = express()
 
-app.use(cors());
-app.options('*', cors());
+app.use(cors({
+  origin: [
+    "https://admin-tipa-shop.vercel.app",
+    "http://localhost:5174"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 
+app.options("*", cors());
 
 app.use(express.json());
 app.use(cookieParser())
