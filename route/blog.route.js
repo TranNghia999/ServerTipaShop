@@ -1,5 +1,5 @@
 import { Router } from 'express';
-//đăng nhập
+
 import auth from '../middlewares/auth.js';
 import upload from '../middlewares/multer.js';
 import { addBlog, deleteBlog, getBlog, getBlogs, updateBlog, uploadImages } from '../controllers/blog.controller.js';

@@ -20,46 +20,6 @@ cloudinary.config({
 
 var imagesArr = [];
 
-// tải hình ảnh lên cloudinary
-// export async function uploadImages(request, response) {
-//     try {
-//         imagesArr = [];
-
-//         const image = request.files;
-
-
-//         const options = {
-//             use_filename: true,
-//             unique_filename: false,
-//             overwrite: false,
-//         };
-
-//         for (let i = 0; i < image?.length; i++) {
-
-//             const img = await cloudinary.uploader.upload(
-//                 image[i].path,
-//                 options,
-//                 function (error, result) {
-//                     imagesArr.push(result.secure_url);
-//                     fs.unlinkSync(`uploads/${request.files[i].filename}`);
-//                 }
-//             );
-//         }
-
-
-//         return response.status(200).json({
-//             images: imagesArr
-//         });
-
-//     } catch (error) {
-//         return response.status(500).json({
-//             message: error.message || error,
-//             error: true,
-//             success: false
-//         })
-//     }
-// }
-
 // tải hình ảnh lên cloudinary dùng cho publish server (Phát viết)
 export async function uploadImages(request, response) {
     try {
@@ -112,46 +72,6 @@ export async function uploadImages(request, response) {
         });
     }
 }
-// tải hình ảnh Banner lên cloudinary
-// var bannerImage = [];
-// export async function uploadBannerImages(request, response) {
-//     try {
-//         bannerImage = [];
-
-//         const image = request.files;
-
-
-//         const options = {
-//             use_filename: true,
-//             unique_filename: false,
-//             overwrite: false,
-//         };
-
-//         for (let i = 0; i < image?.length; i++) {
-
-//             const img = await cloudinary.uploader.upload(
-//                 image[i].path,
-//                 options,
-//                 function (error, result) {
-//                     bannerImage.push(result.secure_url);
-//                     fs.unlinkSync(`uploads/${request.files[i].filename}`);
-//                 }
-//             );
-//         }
-
-
-//         return response.status(200).json({
-//             images: bannerImage
-//         });
-
-//     } catch (error) {
-//         return response.status(500).json({
-//             message: error.message || error,
-//             error: true,
-//             success: false
-//         })
-//     }
-// }
 
 // tải hình ảnh Banner lên cloudinary dùng cho publish server ( Phát viết )
 export async function uploadBannerImages(request, response) {
@@ -202,66 +122,6 @@ export async function uploadBannerImages(request, response) {
     }
 }
 
-//tạo ra sản phẩm
-// export async function createProduct(request, response) {
-//     try {
-//         let product = new ProductModel({
-//             name: request.body.name,
-//             description: request.body.description,
-//             describe: request.body.describe,
-//             images: imagesArr,
-//             bannerimages: bannerImage,
-//             bannerTitleName: request.body.bannerTitleName,
-//             isDisplayOnHomeBanner: request.body.isDisplayOnHomeBanner,
-//             brand1: request.body.brand1,
-//             brand: request.body.brand,
-//             price: request.body.price,
-//             oldPrice: request.body.oldPrice,
-//             catName: request.body.catName,
-//             category: request.body.category,
-//             catId: request.body.catId,
-//             subCatId: request.body.subCatId,
-//             subCat: request.body.subCat,
-//             thirdsubCat: request.body.thirdsubCat,
-//             thirdsubCatId: request.body.thirdsubCatId,
-//             countInStock: request.body.countInStock,
-//             rating: request.body.rating,
-//             isFeatured: request.body.isFeatured,
-//             discount: request.body.discount,
-//             productRam: request.body.productRam,
-//             size: request.body.size,
-//             productWeight: request.body.productWeight,
-//         })
-
-//         product = await product.save();
-
-//         if (!product) {
-//             response.status(500).json({
-//                 error: true,
-//                 success: false,
-//                 message: "Sản phẩm chưa được tạo"
-//             });
-//         }
-
-//         imagesArr = [];
-
-//         return response.status(200).json({
-//             message: "Sản phẩm được tạo thành công",
-//             error: false,
-//             success: true,
-//             product: product
-//         })
-
-//     } catch (error) {
-//         return response.status(500).json({
-//             message: error.message || error,
-//             error: true,
-//             success: false
-
-//         })
-//     }
-// }
-
 // tạo ra sản phẩm cho publish server ( Phát viết )
 export async function createProduct(request, response) {
     try {
@@ -311,7 +171,6 @@ export async function createProduct(request, response) {
     }
 }
 
-//lấy tất cả các sản phẩm
 export async function getAllProducts(request, response) {
     try {
 
@@ -359,7 +218,6 @@ export async function getAllProducts(request, response) {
     }
 }
 
-//lấy tất cả sản phẩm theo danh mục id
 export async function getAllProductsByCatId(request, response) {
     try {
 
@@ -410,7 +268,6 @@ export async function getAllProductsByCatId(request, response) {
     }
 }
 
-//lấy tất cả sản phẩm theo danh mục tên
 export async function getAllProductsByCatName(request, response) {
     try {
 
@@ -1039,7 +896,6 @@ export async function removeImageFromCloudinary(req, res) {
     }
 }
 
-// Cập nhật sản phẩm -- Banner 
 export async function updateProduct(request, response) {
     try {
         const product = await ProductModel.findByIdAndUpdate(
@@ -1058,13 +914,13 @@ export async function updateProduct(request, response) {
             oldPrice: request.body.oldPrice,
             catId: request.body.catId,
             catName: request.body.catName,
-            subCat: request.body.subCat,
             subCatId: request.body.subCatId,
             category: request.body.category,
             thirdsubCat: request.body.thirdsubCat,
             thirdsubCatId: request.body.thirdsubCatId,
             countInStock: request.body.countInStock,
             rating: request.body.rating,
+            discount: request.body.discount,
             isFeatured: request.body.isFeatured,
             productRam: request.body.productRam,
             size: request.body.size,
@@ -1096,9 +952,7 @@ export async function updateProduct(request, response) {
     }
 }
 
-// PHẦN RAM
 
-// Tạo dữ Liệu Ram
 export async function createProductRAMS(request, response) {
     try {
         let productRAMS = new ProductRAMSModel({
@@ -1132,7 +986,7 @@ export async function createProductRAMS(request, response) {
     }
 }
 
-//xóa 1 sản phẩm Ram 
+
 export async function deleteProductRAMS(request, response) {
     const productRAMS = await ProductRAMSModel.findById(request.params.id);
 
@@ -1162,7 +1016,6 @@ export async function deleteProductRAMS(request, response) {
 }
 
 
-// Cập nhật Ram
 export async function updateProductRam(request, response) {
     try {
 
@@ -1196,7 +1049,6 @@ export async function updateProductRam(request, response) {
     }
 }
 
-// Lấy dữ liệu Ram
 export async function getProductRams(request, response) {
     try {
 
@@ -1225,7 +1077,7 @@ export async function getProductRams(request, response) {
     }
 }
 
-// Chỉnh sửa dữ liệu Ram
+
 export async function getProductRamsById(request, response) {
     try {
 
@@ -1254,9 +1106,6 @@ export async function getProductRamsById(request, response) {
     }
 }
 
-// PHẦN WEIGHT
-
-// Tạo dữ Liệu weight
 export async function createProductWeight(request, response) {
     try {
         let productWeight = new ProductWEIGHTModel({
@@ -1290,7 +1139,7 @@ export async function createProductWeight(request, response) {
     }
 }
 
-//xóa 1 sản phẩm Weight
+
 export async function deleteProducWeight(request, response) {
     const productWeight = await ProductWEIGHTModel.findById(request.params.id);
 
@@ -1319,7 +1168,7 @@ export async function deleteProducWeight(request, response) {
     });
 }
 
-// Cập nhật Weight
+
 export async function updateProductWeight(request, response) {
     try {
 
@@ -1353,7 +1202,7 @@ export async function updateProductWeight(request, response) {
     }
 }
 
-// Lấy dữ liệu Weight
+
 export async function getProductWeight(request, response) {
     try {
 
@@ -1381,7 +1230,7 @@ export async function getProductWeight(request, response) {
     }
 }
 
-// Chỉnh sửa dữ liệu Weight
+
 export async function getProductWeightById(request, response) {
     try {
 
@@ -1410,9 +1259,7 @@ export async function getProductWeightById(request, response) {
     }
 }
 
-// PHẦN Size
 
-// Tạo dữ Liệu Size
 export async function createProductSize(request, response) {
     try {
         let productSize = new ProductSIZEModel({
@@ -1446,7 +1293,7 @@ export async function createProductSize(request, response) {
     }
 }
 
-//xóa 1 sản phẩm Size
+
 export async function deleteProductSize(request, response) {
     const productSize = await ProductSIZEModel.findById(request.params.id);
 
@@ -1476,7 +1323,6 @@ export async function deleteProductSize(request, response) {
 }
 
 
-// Cập nhật Size
 export async function updateProductSize(request, response) {
     try {
 
@@ -1510,7 +1356,7 @@ export async function updateProductSize(request, response) {
     }
 }
 
-// Lấy dữ liệu Size
+
 export async function getProductSize(request, response) {
     try {
 
@@ -1538,7 +1384,6 @@ export async function getProductSize(request, response) {
     }
 }
 
-// Chỉnh sửa dữ liệu Size
 export async function getProductSizeById(request, response) {
     try {
 
@@ -1567,7 +1412,7 @@ export async function getProductSizeById(request, response) {
     }
 }
 
-// Filter - Lọc Sản Phẩm
+
 export async function filters(request, response) {
     const { catId, subCatId, thirdsubCatId, minPrice, maxPrice, rating, page, limit } = request.body;
 
@@ -1617,7 +1462,7 @@ export async function filters(request, response) {
     }
 }
 
-// Lọc Kiểu Sắp xếp theo
+
 const sortItems = (products, sortBy, order) => {
     return products.sort((a, b) => {
         if (sortBy === 'name') {
@@ -1633,7 +1478,6 @@ const sortItems = (products, sortBy, order) => {
     })
 }
 
-//  Lấy danh sách Sắp xếp theo sản phẩm, rồi sắp xếp nó theo tiêu chí sortBy và order
 export async function sortBy(request, response) {
     const { products, sortBy, order } = request.body;
     const sortedItems = sortItems([...products?.products], sortBy, order);
@@ -1647,7 +1491,7 @@ export async function sortBy(request, response) {
     })
 }
 
-// Thanh tìm kiếm phần giao diện
+
 export async function searchProductController(request, response) {
     try {
         const { query, page, limit } = request.body;

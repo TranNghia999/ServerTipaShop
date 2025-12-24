@@ -1,4 +1,4 @@
-// Các Thư Viện
+ // Các Thư Viện
 import UserModel from "../models/user.model.js";
 import ReviewModel from "../models/reviews.model.js";
 
@@ -6,6 +6,9 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import path from "path";
+import streamifier from "streamifier";
+
 // Các Hàm Thêm
 import sendEmailFun from "../config/sendEmail.js";
 import VerificationEmail from "../utils/verifyEmailTemplate.js";
@@ -19,7 +22,7 @@ cloudinary.config({
   secure: true,
 });
 
-// Đăng Ký người dùng bằng email
+
 export async function registerUserController(request, response) {
   try {
     let user;
@@ -32,8 +35,7 @@ export async function registerUserController(request, response) {
         success: false,
       });
     }
-    // Tự làm Nâng Cao Bảo Mật
-    // Kiểm tra mật khẩu có mạnh không
+
     const isStrongPassword = (password) => {
       const strongPasswordRegex =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -69,28 +71,19 @@ export async function registerUserController(request, response) {
       password: hashPassword,
       name: name,
       otp: verifyCode,
-      otpExpires: Date.now() + 600000,
+      otpExpires: Date.now() + 180000,
     });
 
     await user.save();
 
-    // Gửi email xác minh - cũ
-    // await sendEmailFun(
-    //   email,
-    //   "Xác minh email từ trang web thương mại điện tử",
-    //   "",
-    //   VerificationEmail(name, verifyCode)
-    // );
 
-     // Gửi email xác minh - mới
       const emailResult = await sendEmailFun(
         email,
-        "Xác minh email từ trang web thương mại điện tử",
+          "Tipashop – Mã xác minh OTP",
         "",
         VerificationEmail(name, verifyCode)
       );
 
-      // Mới thêm kiểm tra lỗi gửi email
       if (!emailResult?.success) {
         return response.status(500).json({
           message: "Không gửi được OTP, vui lòng thử lại sau.",
@@ -99,7 +92,6 @@ export async function registerUserController(request, response) {
         });
       }
 
-    // Tạo mã thông báo JWT cho mục đích xác minh
     const token = jwt.sign(
       { email: user.email, id: user._id },
       process.env.JSON_WEB_TOKEN_SECRET_KEY
@@ -120,8 +112,6 @@ export async function registerUserController(request, response) {
     });
   }
 }
-
-// Xác Minh Email
 export async function verifyEmailController(request, response) {
   try {
     const { email, otp } = request.body;
@@ -165,7 +155,6 @@ export async function verifyEmailController(request, response) {
   }
 }
 
-// Đăng Nhập
 export async function loginUserController(request, response) {
   try {
     const { email, password } = request.body;
@@ -237,7 +226,6 @@ export async function loginUserController(request, response) {
   }
 }
 
-// Đăng Xuất
 export async function logoutController(request, response) {
   try {
     const userId = request.userId; // middleware
@@ -269,7 +257,6 @@ export async function logoutController(request, response) {
   }
 }
 
-// Đăng Ký Bằng Google
 export async function authWithGoogle(request, response) {
   const { name, email, password, avatar, mobile, role } = request.body;
 
@@ -349,77 +336,79 @@ export async function authWithGoogle(request, response) {
   }
 }
 
-// tải hình ảnh avatar lên cloudinary
-var imagesArr = [];
-export async function userAvatarController(request, response) {
-  try {
-    imagesArr = [];
 
-    const userId = request.userId; // auth middleware
-    const image = request.files;
+ export async function userAvatarController(req, res) {
+     try {
+         const userId = req.userId;
+         const files = req.files;
 
-    const user = await UserModel.findOne({ _id: userId });
+         if (!files || files.length === 0) {
+             return res.status(400).json({
+                 message: "Không có ảnh được tải lên",
+                 error: true,
+                 success: false,
+             });
+         }
 
-    if (!user) {
-      return response.status(500).json({
-        message: "Không tìm thấy người dùng",
-        error: true,
-        success: false,
-      });
-    }
+         const user = await UserModel.findById(userId);
+         if (!user) {
+             return res.status(404).json({
+                 message: "Không tìm thấy người dùng",
+                 error: true,
+                 success: false,
+             });
+         }
 
-    // Xóa hình avatar khỏi cloudinary
-    const imgUrl = user.avatar;
+         const file = files[0];
 
-    const urlArr = imgUrl.split("/");
-    const avatar_image = urlArr[urlArr.length - 1];
+         if (!file.mimetype.startsWith("image/")) {
+             return res.status(400).json({
+                 message: "File không phải hình ảnh",
+                 error: true,
+                 success: false,
+             });
+         }
 
-    const imageName = avatar_image.split(".")[0];
+         const avatarUrl = await new Promise((resolve, reject) => {
+             const stream = cloudinary.uploader.upload_stream(
+                 {
+                     folder: "avatars",
+                     public_id: userId.toString(),
+                     overwrite: true,
+                     resource_type: "image",
+                 },
+                 (error, result) => {
+                     if (error) return reject(error);
+                     resolve(result.secure_url);
+                 }
+             );
 
-    if (imageName) {
-      const res = await cloudinary.uploader.destroy(
-        imageName,
-        (error, result) => {
-          // console.log(error, res)
-        }
-      );
-    }
+             streamifier.createReadStream(file.buffer).pipe(stream);
+         });
 
-    const options = {
-      use_filename: true,
-      unique_filename: false,
-      overwrite: false,
-    };
+         user.avatar = avatarUrl;
+         await user.save();
 
-    for (let i = 0; i < image?.length; i++) {
-      const img = await cloudinary.uploader.upload(
-        image[i].path,
-        options,
-        function (error, result) {
-          imagesArr.push(result.secure_url);
-          fs.unlinkSync(`uploads/${request.files[i].filename}`);
-        }
-      );
-    }
-    // Biến lưu Avatar
-    user.avatar = imagesArr[0];
-    await user.save();
+         return res.status(200).json({
+             _id: userId,
+             avatar: avatarUrl,
+             error: false,
+             success: true,
+         });
 
-    return response.status(200).json({
-      _id: userId,
-      avtar: imagesArr[0],
-    });
-  } catch (error) {
-    return response.status(500).json({
-      message: error.message || error,
-      error: true,
-      success: false,
-    });
-  }
-}
+     } catch (error) {
+         console.error("AVATAR UPLOAD ERROR:", error);
+         return res.status(500).json({
+             message: error.message || "Upload avatar failed",
+             error: true,
+             success: false,
+         });
+     }
+ }
 
-// Xóa hình ảnh avatar khỏi cloudinary
-export async function removeImageFromCloudinary(request, response) {
+
+
+ export async function removeImageFromCloudinary(request, response) {
   const imgUrl = request.query.img;
 
   const urlArr = imgUrl.split("/");
@@ -437,7 +426,7 @@ export async function removeImageFromCloudinary(request, response) {
   }
 }
 
-// cập nhật thông tin chi tiết người dùng
+
 export async function updateUserDetails(request, response) {
   try {
     const userId = request.userId; //auth middleware
@@ -489,7 +478,7 @@ export async function updateUserDetails(request, response) {
   }
 }
 
-// code quên mật khẩu, gởi otp để xác thực đổi thông tin quên mật khẩu
+
 export async function forgotPasswordController(request, response) {
   try {
     const { email } = request.body;
@@ -532,7 +521,7 @@ export async function forgotPasswordController(request, response) {
   }
 }
 
-// Xác thực otp trước khi đổi mật khẩu
+
 export async function verifyForgotPasswordOtp(request, response) {
   try {
     const { email, otp } = request.body;
@@ -591,97 +580,10 @@ export async function verifyForgotPasswordOtp(request, response) {
   }
 }
 
-// Đặt lại mật khẩu
-// export async function resetpassword(request, response) {
-//   try {
-//     const { email, oldPassword, newPassword, confirmPassword } = request.body;
-
-//     if (!email || !newPassword || !confirmPassword) {
-//       return response.status(400).json({
-//         error: true,
-//         success: false,
-//         message: "Vui lòng nhập đầy đủ email, mật khẩu mới & xác nhận mật khẩu",
-//       });
-//     }
-
-//     const user = await UserModel.findOne({ email });
-//     if (!user) {
-//       return response.status(400).json({
-//         message: "Email không tồn tại",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     if (user?.signUpWithGoogle === false) {
-//       const checkPassword = await bcryptjs.compare(oldPassword, user.password);
-//       if (!checkPassword) {
-//         return response.status(400).json({
-//           message: "Mật khẩu cũ không đúng",
-//           error: true,
-//           success: false,
-//         });
-//       }
-//     }
-
-//     // Nếu có oldPassword thì kiểm tra như đổi mật khẩu thông thường
-//     if (oldPassword) {
-//       const checkPassword = await bcryptjs.compare(oldPassword, user.password);
-//       if (!checkPassword) {
-//         return response.status(400).json({
-//           message: "Mật khẩu cũ không đúng",
-//           error: true,
-//           success: false,
-//         });
-//       }
-//     }
-
-//     if (newPassword !== confirmPassword) {
-//       return response.status(400).json({
-//         message: "Mật khẩu mới và xác nhận không khớp",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     // Kiểm tra độ mạnh của mật khẩu
-//     const strongPasswordRegex =
-//       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-//     if (!strongPasswordRegex.test(newPassword)) {
-//       return response.status(400).json({
-//         message:
-//           "Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, thường, số và ký tự đặc biệt",
-//         error: true,
-//         success: false,
-//       });
-//     }
-
-//     // Mã hóa và cập nhật mật khẩu
-//     const salt = await bcryptjs.genSalt(10);
-//     const hashPassword = await bcryptjs.hash(confirmPassword, salt);
-//     user.password = hashPassword;
-//     await user.save();
-
-//     return response.json({
-//       message: "Đặt lại mật khẩu thành công",
-//       error: false,
-//       success: true,
-//     });
-//   } catch (error) {
-//     return response.status(500).json({
-//       message: error.message || error,
-//       error: true,
-//       success: false,
-//     });
-//   }
-// }
-
-// Đặt lại mật khẩu
 export async function resetpassword(request, response) {
   try {
     const { email, oldPassword, newPassword, confirmPassword } = request.body;
 
-    // 1️⃣ Kiểm tra dữ liệu đầu vào
     if (!email || !newPassword || !confirmPassword) {
       return response.status(400).json({
         error: true,
@@ -690,7 +592,7 @@ export async function resetpassword(request, response) {
       });
     }
 
-    // 2️⃣ Tìm người dùng
+
     const user = await UserModel.findOne({ email });
     if (!user) {
       return response.status(400).json({
@@ -700,7 +602,7 @@ export async function resetpassword(request, response) {
       });
     }
 
-    // 3️⃣ Nếu có oldPassword → kiểm tra mật khẩu cũ
+
     if (oldPassword) {
       const checkPassword = await bcryptjs.compare(oldPassword, user.password);
       if (!checkPassword) {
@@ -712,7 +614,7 @@ export async function resetpassword(request, response) {
       }
     }
 
-    // 4️⃣ Kiểm tra khớp mật khẩu mới và xác nhận
+
     if (newPassword !== confirmPassword) {
       return response.status(400).json({
         message: "Mật khẩu mới và xác nhận không khớp.",
@@ -721,7 +623,7 @@ export async function resetpassword(request, response) {
       });
     }
 
-    // 5️⃣ Kiểm tra độ mạnh của mật khẩu
+
     const strongPasswordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!strongPasswordRegex.test(newPassword)) {
@@ -732,12 +634,12 @@ export async function resetpassword(request, response) {
       });
     }
 
-    // 6️⃣ Mã hóa mật khẩu mới
+
     const salt = await bcryptjs.genSalt(10);
     const hashPassword = await bcryptjs.hash(newPassword, salt); // ✅ đổi từ confirmPassword → newPassword
     user.password = hashPassword;
 
-    // 7️⃣ Xóa OTP sau khi đổi thành công
+
     user.otp = null;
     user.otpExpires = null;
 
@@ -758,7 +660,7 @@ export async function resetpassword(request, response) {
   }
 }
 
-// bộ điều khiển mã thông báo làm mới
+
 export async function refreshToken(request, response) {
   try {
     const refreshToken =
@@ -811,7 +713,7 @@ export async function refreshToken(request, response) {
   }
 }
 
-// lấy-thông-tin-người-dùng-đăng-cập
+
 export async function userDetails(request, response) {
   try {
     const userId = request.userId;
@@ -835,7 +737,7 @@ export async function userDetails(request, response) {
   }
 }
 
-// Thêm Đánh giá của người dùng
+
 export async function addReview(request, response) {
   try {
     const { image, userName, review, rating, userId, productId } = request.body;
@@ -865,7 +767,7 @@ export async function addReview(request, response) {
   }
 }
 
-// Lấy dữ liệu đánh giá người dùng
+
 export async function getReview(request, response) {
   try {
     const productId = request.query.productId;
@@ -892,7 +794,7 @@ export async function getReview(request, response) {
   }
 }
 
-// Lấy tất cả đánh giá
+
 export async function getAllReviews(request, response) {
   try {
     const reviews = await ReviewModel.find();
@@ -919,7 +821,7 @@ export async function getAllReviews(request, response) {
   }
 }
 
-// Lấy tất cả người dùng
+
 export async function getAllUsers(request, response) {
   try {
 
@@ -947,7 +849,7 @@ export async function getAllUsers(request, response) {
   }
 }
 
-//Xóa nhiều sản phẩm
+
 export async function deleteMultiple(request, response) {
     const { ids } = request.body;
 

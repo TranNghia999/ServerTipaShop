@@ -1,7 +1,7 @@
 import CartProductModel from "../models/cartProduct.modal.js";
 import UserModel from "../models/user.model.js";
 
-// Thêm sản phẩm vào giỏ hàng
+
 export const addToCartItemController = async(request,response)=>{
     try {
         const userId = request.userId   //middleware
@@ -15,7 +15,7 @@ export const addToCartItemController = async(request,response)=>{
             })
         }
 
-        // Ép kiểu ObjectId khi kiểm tra trùng
+
         const checkItemCart = await CartProductModel.findOne({
             userId : userId,
             productId : productId
@@ -27,7 +27,6 @@ export const addToCartItemController = async(request,response)=>{
             })
         }
 
-        // Các thành phần của giỏ hàng
         const cartItem = new CartProductModel({
             brand: brand,
             brand1: brand1,
@@ -67,7 +66,7 @@ export const addToCartItemController = async(request,response)=>{
     }
 }
 
-// Lấy sản phẩm trong giỏ hàng
+
 export const getCartItemController = async(request,response)=>{
     try {
        
@@ -92,7 +91,6 @@ export const getCartItemController = async(request,response)=>{
     }
 }
 
-// Cập nhật giỏ hàng
 export const updateCartItemQtyController = async(request,response)=>{
     try {
             const userId = request.userId
@@ -135,7 +133,6 @@ export const updateCartItemQtyController = async(request,response)=>{
     }
 }
 
-// Xóa sản phẩm trong giỏ hàng
 export const deleteCartItemQtyController = async(request,response)=>{
     try {
             const userId = request.userId // middleware
@@ -174,7 +171,7 @@ export const deleteCartItemQtyController = async(request,response)=>{
     }
 }
 
-// Xóa tất cả sản phẩm trong giỏ hàng
+
 export const emptyCartController = async (request, response) => {
     try {
     const userId = request.params.id // middleware

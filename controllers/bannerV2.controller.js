@@ -10,7 +10,6 @@ cloudinary.config({
     secure: true,
 });
 
-// tải hình ảnh lên cloudinary
 var imagesArr = [];
 export async function uploadImages(request, response) {
     try {
@@ -51,7 +50,6 @@ export async function uploadImages(request, response) {
     }
 }
 
-// tạo banner
 export async function addBannerV2(request, response) {
     try {
         let banner = new BannerV2Model({
@@ -89,7 +87,6 @@ export async function addBannerV2(request, response) {
     }
 }
 
-// nhận Banner
 export async function getBannersV2(request, response) {
     try {
         const banners = await BannerV2Model.find();
@@ -116,7 +113,6 @@ export async function getBannersV2(request, response) {
     }
 }
 
-// lấy danh mục duy nhất
 export async function getBannerV2(request, response) {
     try {
         const banner = await BannerV2Model.findById(request.params.id);
@@ -143,7 +139,6 @@ export async function getBannerV2(request, response) {
     }
 }
 
-// Xóa Banner
 export async function deleteBannerV2(request, response) {
     const banner = await BannerV2Model.findById(request.params.id);
     const images = banner.images;
@@ -179,7 +174,6 @@ export async function deleteBannerV2(request, response) {
     });
 }
 
-// Cập nhật Banner
 export async function updatedBannerV2(request, response) {
     const banner = await BannerV2Model.findByIdAndUpdate(
         request.params.id,

@@ -10,7 +10,6 @@ cloudinary.config({
   secure: true,
 });
 
-// tải hình ảnh blog lên cloudinary
 var imagesArr = [];
 export async function uploadImages(request, response) {
   try {
@@ -47,7 +46,6 @@ export async function uploadImages(request, response) {
   }
 }
 
-// tạo Blog
 export async function addBlog(request, response) {
   try {
     let blog = new BlogModel({
@@ -82,7 +80,6 @@ export async function addBlog(request, response) {
   }
 }
 
-// lấy tất cả blog - số trang
 export async function getBlogs(request, response) {
   try {
     const page = parseInt(request.query.page) || 1;
@@ -130,7 +127,6 @@ export async function getBlogs(request, response) {
   }
 }
 
-// lấy dữ liệu blog
 export async function getBlog(request, response) {
   try {
     const blog = await BlogModel.findById(request.params.id);
@@ -156,7 +152,6 @@ export async function getBlog(request, response) {
   }
 }
 
-// Xóa Blog
 export async function deleteBlog(request, response) {
   const blog = await BlogModel.findById(request.params.id);
   const images = blog.images;
@@ -191,7 +186,7 @@ export async function deleteBlog(request, response) {
   });
 }
 
-// Cập nhật Blog
+
 export async function updateBlog(request, response) {
   const blog = await BlogModel.findByIdAndUpdate(
     request.params.id,

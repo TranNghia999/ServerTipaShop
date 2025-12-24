@@ -10,7 +10,7 @@ cloudinary.config({
   secure: true,
 });
 
-// tải hình ảnh lên cloudinary, tạo banner, nhận banner, xóa banner, cập nhật banner
+
 var imagesArr = [];
 export async function uploadImages(request, response) {
   try {
@@ -51,7 +51,6 @@ export async function uploadImages(request, response) {
     }
 }
 
-// tạo banner
 export async function addBanner(request, response) { 
     try {
         let banner = new BannerV1Model({
@@ -92,7 +91,6 @@ export async function addBanner(request, response) {
     }
 }
 
-// nhận Banner
 export async function getBanners(request, response) {
     try {
        const banners = await BannerV1Model.find();
@@ -119,7 +117,6 @@ export async function getBanners(request, response) {
     }
 }
 
-// lấy danh mục duy nhất
 export async function getBanner(request, response) {
     try {
         const banner = await BannerV1Model.findById(request.params.id);
@@ -146,7 +143,6 @@ export async function getBanner(request, response) {
     }
 }
 
-// Xóa Banner
 export async function deleteBanner(request, response) {
     const banner = await BannerV1Model.findById(request.params.id);
     const images = banner.images;
@@ -182,7 +178,6 @@ export async function deleteBanner(request, response) {
             });
 }
 
-// Cập nhật Banner
 export async function updatedBanner(request, response){
     const banner = await BannerV1Model.findByIdAndUpdate(
         request.params.id,

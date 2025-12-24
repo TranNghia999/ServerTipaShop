@@ -3,7 +3,7 @@ import UserModel from '../models/user.model.js';
 import ProductModel from "../models/product.modal.js";
 import paypal from "@paypal/checkout-server-sdk";
 
-// Tạo đơn hàng
+
 export const createOrderController = async (request, response) => {
   try {
     let order = new OrderModel({
@@ -49,31 +49,52 @@ export const createOrderController = async (request, response) => {
     });
   }
 };
-// Lấy chi tiết đơn hàng theo userId làm lịch sử đơn hàng
-export async function getOrderDetailsController(request, response) { 
+
+export async function getOrderDetailsController(request, response) {
     try {
-    
-    const userId = request.userId // order id
 
-    const orderlist = await OrderModel.find().sort({ createdAt: -1 }).populate('delivery_address userId')
+        const userId = request.userId // order id
 
-    return response.json({
-        message: "Danh sách đơn hàng",
-        data: orderlist,
-        error: false,
-        success: true
-    })
+        const orderlist = await OrderModel.find({ userId: userId }).sort({ createdAt: -1 }).populate('delivery_address userId')
+
+        return response.json({
+            message: "Danh sách đơn hàng",
+            data: orderlist,
+            error: false,
+            success: true
+        })
 
     } catch (error) {
-       return response.status(500).json({
-      message: error.message || error,
-      error: true,
-      success: false,
-    });  
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false,
+        });
     }
 }
 
-// Lấy tổng số đơn hàng
+export async function getAllOrderDetailsController(request, response) {
+    try {
+
+        const userId = request.userId // order id
+
+        const orderlist = await OrderModel.find().sort({ createdAt: -1 }).populate('delivery_address userId')
+
+        return response.json({
+            message: "Danh sách đơn hàng",
+            data: orderlist,
+            error: false,
+            success: true
+        })
+
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false,
+        });
+    }
+}
 export async function getTotalOrdersCountController(request, response) {
   try {
     const ordersCount = await OrderModel.countDocuments();
@@ -92,7 +113,7 @@ export async function getTotalOrdersCountController(request, response) {
   }
 }
 
-// lấy chi tiết đơn hàng theo orderId
+
 function getPayPalClient() {
 
   const environment = 
@@ -108,7 +129,7 @@ function getPayPalClient() {
 
 return new paypal.core.PayPalHttpClient(environment);
 }
-// Tạo đơn hàng PayPal
+
 export const createOrderPaypalController = async (request, response) => { 
   try {
       const req = new paypal.orders.OrdersCreateRequest();
@@ -140,7 +161,7 @@ export const createOrderPaypalController = async (request, response) => {
       });  
     }
   }
-// Capture đơn hàng PayPal
+
 export const captureOrderPaypalController = async (request, response) => {
    try {
         const { paymentId } = request.body;
@@ -185,7 +206,6 @@ export const captureOrderPaypalController = async (request, response) => {
 
 }
 
-// Cập nhật trạng thái đơn hàng
 export const updateOrderStatusController = async (request, response) => {
     try {
       const { id, order_status } = request.body;
@@ -215,7 +235,7 @@ export const updateOrderStatusController = async (request, response) => {
     }
 }
 
-// Tổng doanh thu theo năm và tháng
+
 export const totalSalesController = async (request, response) => {
     try {
 
@@ -372,7 +392,7 @@ export const totalSalesController = async (request, response) => {
       }
 }
 
-// Tổng người dùng theo năm và tháng
+
 export const totalUsersController = async (request, response) => {
   try {
         const users = await UserModel.aggregate([
@@ -532,3 +552,51 @@ export const totalUsersController = async (request, response) => {
   }
 }
 
+// Hủy đơn hàng theo orderId (SOC)
+export const cancelOrderController = async (request, response) => {
+  try {
+    const { soc } = request.body;
+    if (!soc) {
+      return response.status(400).json({
+        success: false,
+        error: true,
+        message: "Thiếu mã đơn hàng (orderId)",
+      });
+    }
+
+    const order = await OrderModel.findOne({ orderId: soc });
+
+    if (!order) {
+      return response.status(404).json({
+        success: false,
+        error: true,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+    // ❌ Nếu đã hủy rồi
+    if (order.order_status === "cancelled") {
+      return response.status(400).json({
+        success: false,
+        error: true,
+        message: "Đơn hàng đã được hủy trước đó",
+      });
+    }   
+
+    // ✅ Cập nhật trạng thái
+    order.order_status = "cancelled";
+    await order.save();
+
+    return response.status(200).json({
+      success: true,
+      error: false,
+      message: "Hủy đơn hàng thành công",
+      data: order,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      success: false,
+      error: true,
+      message: error.message || error,
+    });
+  }
+};

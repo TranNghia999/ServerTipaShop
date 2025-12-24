@@ -55,7 +55,6 @@ app.use("/api/order", orderRouter)
 
 
 
-// Server chỉ chạy khi đã kết nối MongoDB, tránh lỗi truy vấn DB khi DB chưa sẵn sàng.
 connectDB().then(()=>{
     app.listen(process.env.PORT, () =>{
         console.log("Server is running", process.env.PORT);

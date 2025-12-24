@@ -5,7 +5,7 @@ const VerificationEmail = (username, otp) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Verification</title>
+  <title>Xác thực Email</title>
   <style>
       body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
       .container { max-width: 600px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
@@ -21,16 +21,20 @@ const VerificationEmail = (username, otp) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>Hii ${username} Please Verify Your Email Address</h1>
+      <h1>Xin chào ${username}, vui lòng xác thực email</h1>
     </div>
     <div class="content">
     
-      <p>Thank you for registering with Spicez Gold. Please use the OTP below to verify your email address:</p>
+      <p>Vui lòng sử dụng <strong>mã xác thực (OTP)</strong> bên dưới để hoàn tất quá trình đăng ký:</p>
       <div class="otp">${otp}</div>
-      <p>If you didn't create an account, you can safely ignore this email.</p>
+      <p> 
+        Mã xác thực có hiệu lực trong vòng <strong>3 phút</strong> kể từ thời điểm nhận email.
+        Vui lòng không chia sẻ mã này với bất kỳ ai.
+      </p>
+      <p>Nếu bạn không thực hiện đăng ký tài khoản, hãy bỏ qua email này.</p>
     </div>
     <div class="footer">
-      <p>&copy; 2024 Spicez Gold. All rights reserved.</p>
+      <p>&copy; 2025 Công ty TNHH SX – TM Tín Phát Việt. Bảo lưu mọi quyền.</p>
     </div>
   </div>
 </body>

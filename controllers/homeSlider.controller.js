@@ -10,7 +10,7 @@ cloudinary.config({
     secure: true,
 });
 
-// tải hình ảnh lên cloudinary
+
 var imagesArr = [];
 export async function uploadImages(request, response) {
   try {
@@ -51,7 +51,7 @@ export async function uploadImages(request, response) {
     }
 }
 
-// tạo Slider
+
 export async function addHomeSlide(request, response) {
     try {
          let slide = new HomeSliderModel({
@@ -84,7 +84,7 @@ export async function addHomeSlide(request, response) {
     }
 }
 
-// Lấy Slider
+
 export async function getHomeSlides(request, response) {
     try {
        const slides = await HomeSliderModel.find();
@@ -112,7 +112,6 @@ export async function getHomeSlides(request, response) {
     }
 }
 
-// lấy danh mục duy nhất
 export async function getSlide(request, response) {
     try {
         const slide = await HomeSliderModel.findById(request.params.id);
@@ -139,7 +138,6 @@ export async function getSlide(request, response) {
     }
 }
 
-// Xóa hình ảnh avatar khỏi cloudinary
 export async function removeImageFromCloudinary(request, response) {
   const imgUrl = request.query.img;
 
@@ -166,7 +164,6 @@ export async function removeImageFromCloudinary(request, response) {
   }
 }
 
-// Xóa Slide
 export async function deleteSlide(request, response) {
     const slide = await HomeSliderModel.findById(request.params.id);
     const images = slide.images;
@@ -202,7 +199,6 @@ export async function deleteSlide(request, response) {
             });
 }
 
-// Cập nhật Slide
 export async function updatedSlide(request, response){
 
     const slide = await HomeSliderModel.findByIdAndUpdate(
@@ -229,7 +225,6 @@ export async function updatedSlide(request, response){
     })
 }
 
-//Xóa nhiều Slide
 export async function deleteMultipleSlide(request, response) {
   const { ids } = request.body;
 

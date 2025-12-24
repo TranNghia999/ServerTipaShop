@@ -4,7 +4,7 @@ import auth from '../middlewares/auth.js';
 import upload from '../middlewares/multer.js';
 
 
-// Các Tuyến đường kết nối của người dùng
+
 const userRouter = Router()
 
 userRouter.post('/register', registerUserController)

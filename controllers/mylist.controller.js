@@ -1,7 +1,6 @@
 import MylistModel from '../models/myList.modal.js';
 
 
-// Thêm sản phẩm vào danh sách
 export const addToMyListController = async (request, response) => {
     try {
         const userId = request.userId //middleware
@@ -37,7 +36,7 @@ export const addToMyListController = async (request, response) => {
     }
 }
 
-// Lấy danh sách sản phẩm
+
 export const getMyListController = async (request, response) => {
     try {
 
@@ -63,7 +62,7 @@ export const getMyListController = async (request, response) => {
     }
 }
 
-// Xóa sản phẩm vào danh sách
+
 export const deleteToMyListController = async (request, response) => {
     try {
        const myListItem = await MylistModel.findById(request.params.id);

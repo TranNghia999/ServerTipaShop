@@ -11,7 +11,7 @@ cloudinary.config({
     secure: true,
 });
 
-// tải hình ảnh lên cloudinary
+
 export async function uploadImages(req, res) {
   try {
     const files = req.files;
@@ -53,7 +53,7 @@ export async function uploadImages(req, res) {
   }
 }
 
-// tạo danh mục
+
 export async function createCategory(request, response) { 
     try {
         let category = new CategoryModel({
@@ -72,7 +72,6 @@ export async function createCategory(request, response) {
         }
 
         category = await category.save();
-        imagesArr = [];
 
         return response.status(200).json({
             message: "Đã tạo danh mục",
@@ -90,7 +89,6 @@ export async function createCategory(request, response) {
     }
 }
 
-// lấy Danh mục
 export async function getCategories(request, response) {
     try {
        const categories = await CategoryModel.find();
@@ -125,7 +123,7 @@ export async function getCategories(request, response) {
     }
 }
 
-//lấy số lượng danh mục
+
 export async function getCategoriesCount(request, response) {
     try {
         const categoryCount = await CategoryModel.countDocuments({parentId:undefined});
@@ -147,7 +145,7 @@ export async function getCategoriesCount(request, response) {
     }
 }
 
-//lấy số lượng danh mục phụ
+
 export async function getSubCategoriesCount(request, response) {
     try {
             const categories = await CategoryModel.find();
@@ -176,7 +174,7 @@ export async function getSubCategoriesCount(request, response) {
     }
 }
 
-// lấy danh mục duy nhất
+
 export async function getCategory(request, response) {
     try {
         const category = await CategoryModel.findById(request.params.id);
@@ -203,7 +201,7 @@ export async function getCategory(request, response) {
     }
 }
 
-// Xóa hình ảnh avatar khỏi cloudinary
+
 export async function removeImageFromCloudinary(request, response) {
   const imgUrl = request.query.img;
 
@@ -230,7 +228,7 @@ export async function removeImageFromCloudinary(request, response) {
   }
 }
 
-// Xóa danh mục
+
 export async function deleteCategory(request, response) {
     const category = await CategoryModel.findById(request.params.id);
     const images = category.images;
@@ -281,7 +279,7 @@ export async function deleteCategory(request, response) {
             });
 }
 
-// Cập nhật danh mục
+
 export async function updatedCategory(request, response){
     const category = await CategoryModel.findByIdAndUpdate(
         request.params.id,
@@ -301,7 +299,6 @@ export async function updatedCategory(request, response){
             error:true
         });
     }
-    imagesArr = [];
 
         response.status(200).json({
         error:false,
