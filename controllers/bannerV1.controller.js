@@ -1,6 +1,8 @@
 import BannerV1Model from '../models/bannerV1.model.js';
 
 import { v2 as cloudinary } from 'cloudinary';
+import path from "path";
+import streamifier from "streamifier"
 import fs from 'fs';
 
 cloudinary.config({
@@ -14,81 +16,66 @@ cloudinary.config({
 var imagesArr = [];
 export async function uploadImages(request, response) {
   try {
-        imagesArr = [];
+    const files = req.files;
 
-        const image = request.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No images uploaded" });
+    }
 
-    
-    const options = {
-            use_filename: true,
-            unique_filename: false,
+    const uploadPromises = files.map((file) => {
+      return new Promise((resolve, reject) => {
+        const originalName = path.parse(file.originalname).name;
+
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "banners",
+            public_id: `${originalName}-${Date.now()}`,
             overwrite: false,
-        };
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result.secure_url);
+          }
+        );
 
-    for (let i = 0; i < image?.length; i++) {
-    
-        const img = await cloudinary.uploader.upload(
-                image[i].path,
-                options,
-                function (error, result) {
-                    imagesArr.push(result.secure_url);
-                    fs.unlinkSync(`uploads/${request.files[i].filename}`);
-                }
-            );
-        }
-      
+        streamifier.createReadStream(file.buffer).pipe(stream);
+      });
+    });
 
-        return response.status(200).json({
-            images: imagesArr
-        });
+    const images = await Promise.all(uploadPromises);
+
+    return res.status(200).json({
+      success: true,
+      images,
+    });
 
   } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        })
-    }
+    console.error("UPLOAD BANNER ERROR:", error);
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
 }
 
 export async function addBanner(request, response) { 
     try {
         let banner = new BannerV1Model({
 
-            bannerTitle: request.body.bannerTitle,
-            images: imagesArr,
-            catId: request.body.catId,
-            subCatId: request.body.subCatId,
-            thirdsubCatId: request.body.thirdsubCatId,
-            price: request.body.price,
-            alignInfo:request.body.alignInfo
-        });
+    await banner.save();
 
-        if (!banner) {
-            return response.status(500).json({
-                message: "Banner được tạo",
-                error: true,
-                success: false
-            })
-        }
+    return res.status(200).json({
+      success: true,
+      message: "Đã tạo Banner",
+      banner,
+    });
 
-        banner = await banner.save();
-        imagesArr = [];
-
-        return response.status(200).json({
-            message: "Đã tạo danh mục",
-            error: false,
-            success: true,
-            banner: banner
-        })
-        
-    } catch (error) {
-        return response.status(500).json({
-            message: error.message || error,
-            error: true,
-            success: false
-        }) 
-    }
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
 }
 
 export async function getBanners(request, response) {
@@ -194,18 +181,64 @@ export async function updatedBanner(request, response){
     );
 
     if (!banner) {
-        return response.status(500).json({
-            message: "Không thể cập nhật Banner",
-            success: false,
-            error:true
-        });
+      return res.status(404).json({
+        error: true,
+        message: "Không tìm thấy Banner",
+      });
     }
-    imagesArr = [];
 
-        response.status(200).json({
-            error:false,
-            success:true,
-            banner:banner,
-            message: "Cập nhật Banner thành công"
-    })
+    // 1️⃣ Xoá tất cả ảnh trên Cloudinary
+    for (const imgUrl of banner.images) {
+      const imageName = imgUrl.split("/").pop().split(".")[0];
+
+      if (imageName) {
+        await cloudinary.uploader.destroy(imageName);
+      }
+    }
+
+    // 2️⃣ Xoá banner trong DB
+    await BannerV1Model.findByIdAndDelete(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Banner đã bị xóa",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
+  }
+}
+
+
+export async function updatedBanner(req, res) {
+  try {
+    const banner = await BannerV1Model.findByIdAndUpdate(
+      req.params.id,
+      {
+        bannerTitle: req.body.bannerTitle,
+        images: req.body.images,
+        catId: req.body.catId,
+        subCatId: req.body.subCatId,
+        thirdsubCatId: req.body.thirdsubCatId,
+        price: req.body.price,
+        alignInfo: req.body.alignInfo,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+        message: "Đã cập nhật Banner",
+      banner,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+        message: error.message,
+    });
+  }
 }

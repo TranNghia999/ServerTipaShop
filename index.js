@@ -19,6 +19,10 @@ import bannerV1Router from './route/bannerV1.route.js';
 import blogRouter from './route/blog.route.js';
 import bannerV2Router from './route/bannerV2.route.js';
 import orderRouter from './route/order.route.js';
+import sitemapRouter from './route/sitemap.routes.js'
+import slugRouter from './route/slug.route.js'
+import seoRouter from './route/seo.route.js'
+
 
 
 const app = express()
@@ -40,7 +44,9 @@ app.get("/", (request, response) => {
     message: "Server is running " + process.env.PORT
   });
 });
-
+app.use('/', sitemapRouter)
+app.use('/seo', seoRouter)
+app.use('/api/slug', slugRouter)
 app.use('/api/user', userRouter);
 app.use('/api/category',categoryRouter);
 app.use('/api/product', productRouter);

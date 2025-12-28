@@ -59,6 +59,14 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  shipperFee:{
+    type: Number,
+    default: 0
+  },
+  shipperID : {
+     type : String,
+     default : null
+  },
   // 🔹 Mã tạo cho đơn hàng để kết nối dữ liệu
   orderId: {
     type: String

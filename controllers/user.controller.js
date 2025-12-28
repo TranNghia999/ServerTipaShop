@@ -131,6 +131,7 @@ export async function verifyEmailController(request, response) {
       user.verify_email = true;
       user.otp = null;
       user.otpExpires = null;
+      user.firstBuy = true;
       await user.save();
       return response.status(200).json({
         error: false,

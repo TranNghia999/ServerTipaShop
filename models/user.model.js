@@ -1,4 +1,3 @@
-// Kết nối đến MongoDB Atlas
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
@@ -68,6 +67,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['ADMIN', "USER"],
     default: "USER"
+  },
+  firstBuy: {
+     type: Boolean,
+     default: true
   },
   signUpWithGoogle: {
     type: Boolean,

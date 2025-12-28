@@ -10,15 +10,14 @@ const auth = async (request, response, next) => {
 
     if (!token) {
       return response.status(401).json({
-        message: "Cung cấp mã thông báo"
+        message: "Vui lòng đăng nhập lại"
       })
     }
 
     const decode = await jwt.verify( token, process.env.SECRET_KEY_ACCESS_TOKEN )
-
-    if(!decode){
+      if(!decode){
         return response.status(401).json({
-            message : "truy cập trái phép",
+            message : "Quyền hạn đã hết. Vui lòng đăng nhập lại",
             error : true,
             success : false
         })

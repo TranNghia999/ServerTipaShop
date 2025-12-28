@@ -43,9 +43,8 @@ export const addToCartItemController = async(request,response)=>{
             userId: userId,
             size: size,
             weight: weight,
-            ram: ram
-                    ,
-                    products_tipaId: products_tipaId
+            ram: ram,
+            products_tipaId: products_tipaId
         })
 
         const save = await cartItem.save()
