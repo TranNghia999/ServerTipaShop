@@ -13,7 +13,7 @@ cloudinary.config({
 });
 
 
-export async function uploadImages(request, response) {
+export async function uploadImages(req, res) {
   try {
     const files = req.files;
 
@@ -56,6 +56,7 @@ export async function uploadImages(request, response) {
     });
   }
 }
+
 
 export async function addBanner(req, res) {
   try {
