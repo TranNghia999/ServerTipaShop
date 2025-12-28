@@ -12,10 +12,9 @@ cloudinary.config({
     secure: true,
 });
 
-var imagesArr = [];
-export async function uploadImages(request, response) {
-    try {
-        imagesArr = [];
+export async function uploadImages(req, res) {
+  try {
+    const files = req.files;
 
     if (!files || files.length === 0) {
       return res.status(400).json({ message: "No images uploaded" });
@@ -53,9 +52,14 @@ export async function uploadImages(request, response) {
   }
 }
 
-export async function addBannerV2(request, response) {
-    try {
-        let banner = new BannerV2Model({
+export async function addBannerV2(req, res) {
+  try {
+    const banner = new BannerV2Model({
+      images: req.body.images,   // <-- URL cloudinary
+      catId: req.body.catId,
+      subCatId: req.body.subCatId,
+      thirdsubCatId: req.body.thirdsubCatId,
+    });
 
     await banner.save();
 
@@ -125,15 +129,9 @@ export async function getBannerV2(request, response) {
     }
 }
 
-export async function deleteBannerV2(request, response) {
-    const banner = await BannerV2Model.findById(request.params.id);
-    const images = banner.images;
-    let img = "";
-    console.log(images)
-    for (img of images) {
-        const imgUrl = img;
-        const urlArr = imgUrl.split("/");
-        const image = urlArr[urlArr.length - 1];
+export async function deleteBannerV2(req, res) {
+  try {
+    const banner = await BannerV2Model.findById(req.params.id);
 
     if (!banner) {
       return res.status(404).json({
@@ -164,7 +162,9 @@ export async function deleteBannerV2(request, response) {
   }
 }
 
-export async function updatedBannerV2(request, response) {
+
+export async function updatedBannerV2(req, res) {
+  try {
     const banner = await BannerV2Model.findByIdAndUpdate(
       req.params.id,
       {
