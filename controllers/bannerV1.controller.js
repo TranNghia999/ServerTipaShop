@@ -13,7 +13,6 @@ cloudinary.config({
 });
 
 
-var imagesArr = [];
 export async function uploadImages(request, response) {
   try {
     const files = req.files;
@@ -58,9 +57,17 @@ export async function uploadImages(request, response) {
   }
 }
 
-export async function addBanner(request, response) { 
-    try {
-        let banner = new BannerV1Model({
+export async function addBanner(req, res) {
+  try {
+    const banner = new BannerV1Model({
+      bannerTitle: req.body.bannerTitle,
+      images: req.body.images, // <-- array URL từ cloudinary
+      catId: req.body.catId,
+      subCatId: req.body.subCatId,
+      thirdsubCatId: req.body.thirdsubCatId,
+      price: req.body.price,
+      alignInfo: req.body.alignInfo,
+    });
 
     await banner.save();
 
@@ -77,6 +84,7 @@ export async function addBanner(request, response) {
     });
   }
 }
+
 
 export async function getBanners(request, response) {
     try {
@@ -130,55 +138,9 @@ export async function getBanner(request, response) {
     }
 }
 
-export async function deleteBanner(request, response) {
-    const banner = await BannerV1Model.findById(request.params.id);
-    const images = banner.images;
-    let img = "";
-    console.log(images)
-    for (img of images) {
-        const imgUrl = img;
-        const urlArr = imgUrl.split("/");
-        const image = urlArr[urlArr.length - 1];
-
-        const imageName = image.split(".")[0];
-
-            if(imageName){
-            cloudinary.uploader.destroy(imageName, (error, result) => {
-                // console.log(error, result);
-            });
-        }
-    }
-    
-        const deletedBanner = await BannerV1Model.findByIdAndDelete(request.params.id);
-            if (!deletedBanner) {
-                response.status(404).json({
-                    message: "Không tìm thấy Banner",
-                    success: false,
-                    error: true
-                });
-            }
-
-            response.status(200).json({
-                success: true,
-                error:false,
-                message: "Banner đã bị xóa!",
-            });
-}
-
-export async function updatedBanner(request, response){
-    const banner = await BannerV1Model.findByIdAndUpdate(
-        request.params.id,
-        {   
-            bannerTitle: request.body.bannerTitle,
-            images: imagesArr.length > 0 ? imagesArr[0] : request.body.images,
-            catId: request.body.catId,
-            subCatId: request.body.subCatId,
-            thirdsubCatId: request.body.thirdsubCatId,
-            price: request.body.price,
-            alignInfo:request.body.alignInfo
-        },
-        { new: true }
-    );
+export async function deleteBanner(req, res) {
+  try {
+    const banner = await BannerV1Model.findById(req.params.id);
 
     if (!banner) {
       return res.status(404).json({
